@@ -1,0 +1,42 @@
+#!/bin/bash
+DIR=$(dirname "${BASH_SOURCE[0]}")
+
+# keybindings
+sxhkd -c "$DIR/sxhkdrc" &
+
+# monitors
+PRIMARY=eDP-1
+EXT_MONITORS=( $(bspc query -M --names | grep -vP "eDP-1") )
+if [[ "${#EXT_MONITORS[@]}" -eq 1 ]]; then
+    SECONDARY=${EXT_MONITORS[0]}
+    xrandr --output $PRIMARY --auto --primary
+    xrandr --output $SECONDARY --auto --above $PRIMARY
+    # bspc wm -O $PRIMARY $SECONDARY
+    bspc monitor $PRIMARY -d $(seq 5 | tr '\n' ' ')
+    bspc monitor $SECONDARY -d $(seq 6 10 | tr '\n' ' ')
+    bspc monitor $PRIMARY -s $SECONDARY
+else
+    bspc monitor -d $(seq 10 | tr '\n' ' ')
+fi
+feh --bg-scale "$DIR/wallpaper.jpg"
+
+# config
+bspc config border_width 3
+bspc config window_gap 12
+bspc config split_ratio 0.5
+bspc config borderless_monocle true
+bspc config gapless_monocle true
+bspc config focused_border_color \#BB33BB
+bspc config normal_border_color \#888888
+bspc config active_border_color \#888888
+bspc config top_padding 0
+
+# rules
+bspc rule -a Emacs state=tiled
+
+# [[ $(pgrep polybar | wc -l) -ne 0 ]] && kill -9 $(pgrep polybar)
+# MONITOR=eDP-1 polybar -c $DIR/polybarrc example &
+# MONITOR=DP-1-3 polybar -c $DIR/polybarrc example &
+
+# panel
+# $DIR/panel
